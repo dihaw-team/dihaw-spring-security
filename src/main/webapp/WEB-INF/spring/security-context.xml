@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:security="http://www.springframework.org/schema/security"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.1.xsd ">
+
+	<bean id="customUserDetailsService" class="com.dihaw.services.custom.CustomUserDetailsService" />
+	<bean id="customAuthenticationProvider" class="com.dihaw.services.custom.CustomAuthenticationProvider" />
+
+	<bean id="customAuthenticationFailureHandler" class="com.dihaw.services.custom.CustomAuthenticationFailureHandler">
+		<property name="defaultFailureUrl" value="${sec.defaultFailureUrl}" />
+        <property name="maxLoginFailureCount" value="${sec.maxLoginFailureCount}"/>
+    </bean>
+	<bean id="customAuthenticationSuccessHandler" class="com.dihaw.services.custom.CustomAuthenticationSuccessHandler" />
+
+	<security:http 	auto-config="true">
+	
+		<security:access-denied-handler	error-page="${sec.error-page}" />
+		
+		<security:anonymous 	granted-authority="ROLE_GUEST" username="guest"/>
+		
+		<security:form-login 	login-page="${sec.login-page}"
+								login-processing-url="${sec.login-processing-url}"
+								default-target-url="${sec.default-target-url}" 
+								username-parameter="${sec.username-parameter}"
+								password-parameter="${sec.password-parameter}"
+								authentication-success-handler-ref="customAuthenticationSuccessHandler"
+								authentication-failure-handler-ref="customAuthenticationFailureHandler"
+								/>
+								
+		<security:logout 		logout-url="/logout" 
+								logout-success-url="${sec.logout-success-url}"/>
+								
+		<security:session-management>
+    		<security:concurrency-control 
+       			max-sessions="1" expired-url="/logout" />
+  		</security:session-management>
+								
+		<security:intercept-url pattern="/persons/**" 	access="ROLE_ADMIN, ROLE_USER" />
+		<security:intercept-url pattern="/users/**" 	access="ROLE_ADMIN" />
+		<security:intercept-url pattern="/email/**" 	access="ROLE_ADMIN" />
+		<security:intercept-url pattern="/**"/>
+		
+	</security:http>
+ 
+	<!-- security:authentication-manager>
+		<security:authentication-provider>
+			<security:jdbc-user-service 
+				data-source-ref="dataSource"
+				users-by-username-query="select username, password, status from users where username=?"
+				authorities-by-username-query="select u1.username, u2.role from users u1, user_authorization u2 where u1.id = u2.user_id and u1.username =?"/>
+		</security:authentication-provider>
+	</security:authentication-manager -->
+	
+	<security:authentication-manager>
+		<security:authentication-provider user-service-ref="customUserDetailsService" />
+		<security:authentication-provider ref="customAuthenticationProvider" />
+	</security:authentication-manager>
+
+	<bean id="dihaw403" class="com.dihaw.utils.CustomAccessDeniedHandler">
+		<property name="errorPage" value="${sec.errorPage}" />
+	</bean>
+	
+	<bean id="expressionHandler" class="org.springframework.security.web.access.expression.DefaultWebSecurityExpressionHandler" />
+	
+</beans>
