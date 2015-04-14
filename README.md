@@ -32,6 +32,6 @@ Maven Spring MVC Application
     * The log will be setted on the C:\dihaw\logs\dihaw-spring-security\SystemOut.log file (see the logback.xml file)
 
 
-Developed by Wahid Gazzah
-http://blog.dihaw.com
-wahid.gazzah@gmail.com
+	Developed by Wahid Gazzah
+	http://blog.dihaw.com
+	wahid.gazzah@gmail.com
